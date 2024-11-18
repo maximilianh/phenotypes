@@ -1,0 +1,11 @@
+awk -v OFS='\t' '{$2="target\t"$2}1' deg.txt | awk -v OFS='\t' '(NR>1) {split($9, a, "_"); $2=a[1];}1' | less > deg.tsv
+../symResolve --mgi ../HGNC_AllianceHomology.rpt deg.tsv deg.hgnc.tsv -i
+./sqLoad pheno.db deg.hgnc.tsv -t mousePerturb4Tf
+cut -f1-4 ../hgnc_complete_set.txt > hgnc.tsv
+cat clusterprop.txt | awk -F'\t' '{OFS="\t"; split($2, a, "_"); $2=a[1]"\t"$2; print}' > clusterprop.tsv
+../symResolve --mgi ../HGNC_AllianceHomology.rpt clusterprop.tsv -i -f 0 clusterprop.hgnc.tsv
+../symResolve --mgi ../HGNC_AllianceHomology.rpt clusterprop.tsv -i -f 1 clusterprop.hgnc.tsv -m target=sym
+./sqLoad ../../pheno.db clusterprop.hgnc.tsv --float=FDR,P_Value,Tstatistic,PropMean_treatNonTarget2,PropMean_treatGuide
+./sqLoad ../../pheno.db clusterprop.hgnc.tsv --float=FDR,P_Value,Tstatistic,PropMean_treatNonTarget2,PropMean_treatGuide -t comp
+../symResolve --mgi ../HGNC_AllianceHomology.rpt.gz deg.tsv deg.hgnc.tsv -i -f1
+../sqLoad ../../pheno.db deg.hgnc.tsv -t mousePerturb4Tf
